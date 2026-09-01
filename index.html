@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Archives - 3D Cyber Library</title>
+    <!-- QRCode library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151d30;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+            --gold: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 60px; min-height: 100vh; }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 18px 5%;
+            background-color: #070a12;
+            border-bottom: 1px solid #1e293b;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .header-top { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--accent); letter-spacing: 0.5px; text-transform: uppercase; }
+
+        .user-auth-bar { display: flex; align-items: center; gap: 12px; }
+        .user-badge { font-size: 0.85rem; color: var(--text-sub); }
+        .auth-btn {
+            background: #1e293b;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .auth-btn:hover { background: var(--accent); color: #070a12; }
+
+        .nav-categories { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+        .nav-btn {
+            background: #1e293b;
+            color: var(--text-sub);
+            border: 1px solid #334155;
+            padding: 8px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--accent);
+            color: #070a12;
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .container { padding: 30px 5%; }
+        .category-title {
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin: 35px 0 20px 0;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            perspective: 1000px;
+        }
+
+        .zoom-anim { animation: zoomIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes zoomIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 850px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 550px) { .grid { grid-template-columns: 1fr; } }
+
+        .book-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #1e293b;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .book-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 30px rgba(56, 189, 248, 0.15);
+        }
+
+        .book-cover-3d {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            margin-bottom: 18px;
+            border-radius: 4px 10px 10px 4px;
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease;
+            box-shadow: 5px 8px 18px rgba(0, 0, 0, 0.6);
+        }
+        .book-card:hover .book-cover-3d { transform: rotateY(-12deg) rotateX(5deg); }
+        .book-cover-3d img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px 8px 8px 4px; }
+
+        .book-card h3 { font-size: 1.05rem; margin-bottom: 8px; color: #fff; line-height: 1.3; }
+        .book-card p { color: var(--text-sub); font-size: 0.82rem; margin-bottom: 18px; line-height: 1.4; }
+
+        .btn {
+            padding: 11px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            width: 100%;
+            font-size: 0.88rem;
+            background: var(--success);
+            color: #000;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .btn:hover { background: #059669; color: #fff; }
+        .btn-unlocked { background: var(--accent); color: #070a12; }
+        .btn-unlocked:hover { background: var(--accent-hover); color: #fff; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            padding: 28px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #334155;
+            position: relative;
+        }
+        .close-btn {
+            background: #334155;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            position: absolute;
+            right: 18px; top: 18px;
+            font-weight: bold;
+        }
+
+        .tab-btn {
+            padding: 10px 18px;
+            background: #1e293b;
+            color: var(--text-sub);
+            border: 1px solid #334155;
+            cursor: pointer;
+            border-radius: 6px;
+            margin-right: 8px;
+            font-weight: 600;
+        }
+        .tab-btn.active { background: var(--accent); color: #070a12; border-color: var(--accent); }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.82rem; color: var(--text-sub); margin-bottom: 6px; font-weight: 600; }
+        .input-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0b0f19;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .input-group input:focus { border-color: var(--accent); }
+
+        .qr-box { display: flex; flex-direction: column; align-items: center; margin: 15px auto; background: #fff; padding: 15px; border-radius: 8px; width: fit-content; }
+        .status-msg { text-align: center; font-size: 0.85rem; color: var(--accent); margin-top: 8px; }
+
+        .reader-frame { background: #fff; color: #000; padding: 25px; border-radius: 6px; height: 380px; overflow-y: scroll; margin-top: 15px; line-height: 1.6; font-family: Georgia, serif; white-space: pre-wrap; }
+        .page-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-top">
+            <div class="logo">Cyber Archives</div>
+            <div class="user-auth-bar" id="user-auth-container"></div>
+        </div>
+        <div class="nav-categories" id="categories-nav"></div>
+    </header>
+
+    <div class="container" id="sections-container"></div>
+
+    <!-- AUTH MODAL -->
+    <div class="modal" id="auth-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('auth-modal')">✕</button>
+            <div style="margin-bottom: 20px;">
+                <button class="tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Login</button>
+                <button class="tab-btn" id="tab-signup-btn" onclick="switchAuthTab('signup')">Sign-Up</button>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <h3 style="margin-bottom: 15px; color: var(--accent);">User Login</h3>
+                <div class="input-group">
+                    <label>Email or Phone Number</label>
+                    <input type="text" id="login-identifier" placeholder="Enter email or phone" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn" style="background: var(--accent); color: #070a12;">Login</button>
+            </form>
+
+            <form id="signup-form" onsubmit="handleSignup(event)" style="display: none;">
+                <h3 style="margin-bottom: 15px; color: var(--accent);">Create Account</h3>
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="signup-email" placeholder="name@example.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="signup-phone" placeholder="10-digit phone number" required>
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-password" placeholder="Create a password" required>
+                </div>
+                <button type="submit" class="btn" style="background: var(--success); color: #000;">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PAYMENT MODAL (UPI ONLY) -->
+    <div class="modal" id="payment-modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('payment-modal')">✕</button>
+            <h3 id="pay-book-title" style="margin-bottom: 12px; color: var(--accent);">Book Purchase (₹1)</h3>
+
+            <div id="qr-pay-section">
+                <p class="status-msg" id="redirect-status">Opening payment app...</p>
+                
+                <div class="qr-box" id="qr-wrapper">
+                    <div id="qrcode"></div>
+                </div>
+
+                <p style="text-align: center; font-size: 0.85rem; color: var(--accent); font-weight: bold;">UPI ID: 8591693220@fam</p>
+                
+                <hr style="border: 0.5px solid #334155; margin: 18px 0;">
+
+                <form id="upload-form" onsubmit="submitPaymentVerification(event)">
+                    <div class="input-group">
+                        <label>Transaction UTR / Ref Number</label>
+                        <input type="text" id="utr-input" placeholder="e.g. 4029XXXXXXXX" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Upload Payment Screenshot</label>
+                        <input type="file" id="screenshot-input" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn">Submit UTR for Access</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOK READER MODAL -->
+    <div class="modal" id="reader-modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <button class="close-btn" onclick="closeModal('reader-modal')">✕</button>
+            <h3 id="reader-title" style="color: var(--accent);">Book Reader</h3>
+            <div class="reader-frame" id="reader-body"></div>
+            <div class="page-controls">
+                <button class="btn" style="width: auto; background: #334155; color: #fff;" onclick="changePage(-1)">Previous</button>
+                <span id="page-num" style="font-size: 0.85rem; color: var(--text-sub);">Page 1</span>
+                <button class="btn" style="width: auto; background: #334155; color: #fff;" onclick="changePage(1)">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TARGET_UPI_ID = "8591693220@fam";
+        let activeBook = null;
+        let currentPage = 1;
+        let currentUser = null;
+        let currentUpiUrl = "";
+
+        function safeJSONParse(key, fallback) {
+            try {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : fallback;
+            } catch (e) {
+                console.error("JSON Error:", e);
+                return fallback;
+            }
+        }
+
+        const full16BooksDataset = [
+            {
+                id: "cat-1",
+                name: "1. Core Cybersecurity & Defense",
+                books: [
+                    { id: 101, title: "Cyber Security Foundations", desc: "Core principles of defense, assets protection & encryption.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80", content: "Cyber Security Foundations\n\nChapter 1: The CIA Triad\nConfidentiality, Integrity, and Availability form the bedrock of information security..." },
+                    { id: 102, title: "Threat Modeling & Risk Analysis", desc: "Identify architectural vulnerabilities before adversaries.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80", content: "Threat Modeling & Risk Analysis\n\nChapter 1: STRIDE Methodology\nSpoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege..." },
+                    { id: 103, title: "Network Defense Systems", desc: "Firewalls, IDS/IPS configuration, and deep packet analysis.", img: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&q=80", content: "Network Defense Systems\n\nChapter 1: Perimeter Security\nConfiguring stateful inspection firewalls, packet filters, and DMZ network setups..." },
+                    { id: 104, title: "Incident Response Playbook", desc: "Step-by-step triage protocols for live security breaches.", img: "https://images.unsplash.com/photo-1510511459019-5dda7724fd87?w=400&q=80", content: "Incident Response Playbook\n\nChapter 1: Initial Detection & Containment\nIsolating infected endpoints, capturing memory dumps, and preserving evidence..." }
+                ]
+            },
+            {
+                id: "cat-2",
+                name: "2. Phishing & Social Engineering",
+                books: [
+                    { id: 201, title: "Phishing & Online Scam Awareness", desc: "Technical breakdown of modern social engineering attacks.", img: "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=400&q=80", content: "Phishing & Online Scam Awareness\n\nChapter 1: Social Engineering Mechanics\nUnderstanding human vulnerabilities, urgency traps, and spear phishing patterns..." },
+                    { id: 202, title: "Advanced Spear Phishing Vectors", desc: "Targeted campaigns, CEO fraud, and credential harvesting.", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80", content: "Advanced Spear Phishing Vectors\n\nChapter 1: OSINT Data Gathering\nHow attackers map corporate hierarchies to launch convincing impersonation attacks..." },
+                    { id: 203, title: "Vishing & Smishing Defense", desc: "Protecting voice calls, OTP scams, and SMS malicious links.", img: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&q=80", content: "Vishing & Smishing Defense\n\nChapter 1: Telecom Spoofing & Caller ID\nTechniques used by call center scammers to fake official bank numbers..." },
+                    { id: 204, title: "Human Firewall Blueprint", desc: "Building security awareness across enterprise employees.", img: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80", content: "Human Firewall Blueprint\n\nChapter 1: Awareness Drills\nDesigning realistic phishing simulations to test organizational resilience..." }
+                ]
+            },
+            {
+                id: "cat-3",
+                name: "3. Penetration Testing & Hacking",
+                books: [
+                    { id: 301, title: "Ethical Hacking Essentials", desc: "Hands-on guide to penetration testing and vulnerability scans.", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80", content: "Ethical Hacking Essentials\n\nChapter 1: Reconnaissance\nActive vs passive scanning using Nmap, Shodan, and DNS footprinting..." },
+                    { id: 302, title: "Web Application Security", desc: "OWASP Top 10 vulnerabilities, SQLi, XSS, and CSRF exploits.", img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80", content: "Web Application Security\n\nChapter 1: Injection Attacks\nUnderstanding SQL injection vectors, blind SQLi, and parameterized query defenses..." },
+                    { id: 303, title: "Metasploit & Exploit Mastery", desc: "Automating exploits, payload creation, and shell access.", img: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=400&q=80", content: "Metasploit & Exploit Mastery\n\nChapter 1: Exploit Frameworks\nSetting up listener handlers, generating MSFvenom payloads, and post-exploitation..." },
+                    { id: 304, title: "Wireless & IoT Hacking", desc: "Wi-Fi encryption cracks, Bluetooth exploits, and smart devices.", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80", content: "Wireless & IoT Hacking\n\nChapter 1: WPA2/WPA3 Attacks\nCapturing 4-way handshakes, dictionary attacks, and rogue AP setup..." }
+                ]
+            },
+            {
+                id: "cat-4",
+                name: "4. Cryptography & Digital Forensics",
+                books: [
+                    { id: 401, title: "Applied Modern Cryptography", desc: "AES, RSA, ECC, digital signatures, and public key infrastructure.", img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&q=80", content: "Applied Modern Cryptography\n\nChapter 1: Symmetric vs Asymmetric Ciphers\nMathematical foundations of AES encryption and RSA key generation..." },
+                    { id: 402, title: "Digital Forensics & Evidence", desc: "Memory dumps, disk imaging, and court-admissible evidence.", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80", content: "Digital Forensics & Evidence\n\nChapter 1: Chain of Custody\nForensic disk cloning using dd, write-blockers, and FTK Imager software..." },
+                    { id: 403, title: "Malware Analysis & Reverse Engineering", desc: "Static and dynamic binary analysis in isolated sandbox environments.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80", content: "Malware Analysis & Reverse Engineering\n\nChapter 1: Disassembly & Ghidra\nAnalyzing PE headers, assembly code, and registry persistence hooks..." },
+                    { id: 404, title: "Blockchain & Zero-Trust Security", desc: "Decentralized identity, smart contract audits, and zero-trust model.", img: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&q=80", content: "Blockchain & Zero-Trust Security\n\nChapter 1: Zero-Trust Architecture\nNever trust, always verify: Identity-centric network access control..." }
+                ]
+            }
+        ];
+
+        function getCategories() {
+            let cats = safeJSONParse('cyberarchives_categories_v4', null);
+            if (!cats || !Array.isArray(cats) || cats.length !== 4) {
+                localStorage.setItem('cyberarchives_categories_v4', JSON.stringify(full16BooksDataset));
+                return full16BooksDataset;
+            }
+            return cats;
+        }
+
+        function getUsers() { return safeJSONParse('cyberarchives_users', []); }
+        function saveUsers(users) { localStorage.setItem('cyberarchives_users', JSON.stringify(users)); }
+
+        function getOrders() { return safeJSONParse('cyberarchives_orders', []); }
+        function saveOrders(orders) { localStorage.setItem('cyberarchives_orders', JSON.stringify(orders)); }
+
+        function updateAuthUI() {
+            currentUser = safeJSONParse('cyberarchives_current_user', null);
+            const container = document.getElementById('user-auth-container');
+            if (currentUser) {
+                container.innerHTML = `
+                    <span class="user-badge">👤 ${currentUser.email || currentUser.phone}</span>
+                    <button class="auth-btn" onclick="logout()">Logout</button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button class="auth-btn" onclick="openAuthModal('login')">Login</button>
+                    <button class="auth-btn" onclick="openAuthModal('signup')">Sign-Up</button>
+                `;
+            }
+        }
+
+        function openAuthModal(tab) {
+            switchAuthTab(tab);
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        function switchAuthTab(tab) {
+            const loginBtn = document.getElementById('tab-login-btn');
+            const signupBtn = document.getElementById('tab-signup-btn');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+
+            if (tab === 'login') {
+                loginBtn.classList.add('active');
+                signupBtn.classList.remove('active');
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+            } else {
+                signupBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+                signupForm.style.display = 'block';
+                loginForm.style.display = 'none';
+            }
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            const email = document.getElementById('signup-email').value.trim();
+            const phone = document.getElementById('signup-phone').value.trim();
+            const password = document.getElementById('signup-password').value;
+
+            const users = getUsers();
+            if (users.some(u => u.email === email || u.phone === phone)) {
+                alert("Account with this email or phone already exists!");
+                return;
+            }
+
+            const newUser = { id: 'USR' + Date.now(), email, phone, password, registeredAt: new Date().toLocaleString() };
+            users.push(newUser);
+            saveUsers(users);
+
+            currentUser = newUser;
+            localStorage.setItem('cyberarchives_current_user', JSON.stringify(currentUser));
+            alert("Account created successfully!");
+            closeModal('auth-modal');
+            updateAuthUI();
+            renderLibrary();
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('login-identifier').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            const users = getUsers();
+            const user = users.find(u => (u.email === identifier || u.phone === identifier) && u.password === password);
+
+            if (!user) {
+                alert("Invalid email/phone or password!");
+                return;
+            }
+
+            currentUser = user;
+            localStorage.setItem('cyberarchives_current_user', JSON.stringify(currentUser));
+            alert("Logged in successfully!");
+            closeModal('auth-modal');
+            updateAuthUI();
+            renderLibrary();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('cyberarchives_current_user');
+            updateAuthUI();
+            renderLibrary();
+        }
+
+        function isBookPurchased(bookId) {
+            if (!currentUser) return false;
+            const orders = getOrders();
+            return orders.some(o => (o.userId === currentUser.id || o.userEmail === currentUser.email) && o.bookId === bookId && o.status === 'APPROVED');
+        }
+
+        function renderLibrary(filterId = 'all') {
+            const categoriesData = getCategories();
+            const container = document.getElementById('sections-container');
+            const navContainer = document.getElementById('categories-nav');
+
+            navContainer.innerHTML = `
+                <button class="nav-btn ${filterId === 'all' ? 'active' : ''}" onclick="filterCategory('all', this)">All Books (16)</button>
+                ${categoriesData.map(c => `
+                    <button class="nav-btn ${filterId === c.id ? 'active' : ''}" onclick="filterCategory('${c.id}', this)">${c.name}</button>
+                `).join('')}
+            `;
+
+            let filteredCats = categoriesData;
+            if (filterId !== 'all') {
+                filteredCats = categoriesData.filter(c => c.id === filterId);
+            }
+
+            container.innerHTML = filteredCats.map(cat => `
+                <div class="category-title">${cat.name}</div>
+                <div class="grid zoom-anim">
+                    ${cat.books.map(book => {
+                        const unlocked = isBookPurchased(book.id);
+                        return `
+                            <div class="book-card">
+                                <div>
+                                    <div class="book-cover-3d">
+                                        <img src="${book.img}" alt="${book.title}" loading="lazy">
+                                    </div>
+                                    <h3>${book.title}</h3>
+                                    <p>${book.desc}</p>
+                                </div>
+                                <button class="btn ${unlocked ? 'btn-unlocked' : ''}" onclick="handleBookClick(${book.id})">
+                                    ${unlocked ? 'Read Now (Unlocked)' : 'Read Digital (₹1)'}
+                                </button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `).join('');
+        }
+
+        function filterCategory(catId, btnElement) {
+            renderLibrary(catId);
+        }
+
+        function handleBookClick(bookId) {
+            if (!currentUser) {
+                alert("Please Login or Sign-Up to purchase and read books.");
+                openAuthModal('login');
+                return;
+            }
+
+            const categoriesData = getCategories();
+            for (let cat of categoriesData) {
+                let found = cat.books.find(b => b.id === bookId);
+                if (found) { activeBook = found; break; }
+            }
+
+            if (isBookPurchased(bookId)) {
+                openReader(activeBook);
+                return;
+            }
+
+            openPaymentModal();
+        }
+
+        function openPaymentModal() {
+            document.getElementById('pay-book-title').innerText = `Purchase: ${activeBook.title}`;
+            currentUpiUrl = `upi://pay?pa=${TARGET_UPI_ID}&pn=CyberArchives&am=1&cu=INR&tn=Book%20Access%20-${encodeURIComponent(activeBook.title)}`;
+
+            generateQRCode(currentUpiUrl);
+            document.getElementById('payment-modal').style.display = 'flex';
+
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const statusMsg = document.getElementById('redirect-status');
+
+            if (isMobile) {
+                statusMsg.innerText = "Redirecting to installed Payment App...";
+                
+                let start = Date.now();
+                window.location.href = currentUpiUrl;
+
+                setTimeout(() => {
+                    if (Date.now() - start < 2500) {
+                        statusMsg.innerText = "No payment app found. Scan QR Code below:";
+                    }
+                }, 1500);
+            } else {
+                statusMsg.innerText = "Scan QR Code using GPay, PhonePe or Paytm:";
+            }
+        }
+
+        function generateQRCode(upiData) {
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(qrContainer, { text: upiData, width: 160, height: 160 });
+            } else {
+                qrContainer.innerHTML = "<p style='color:black; font-size: 0.8rem;'>Scan via UPI App</p>";
+            }
+        }
+
+        function submitPaymentVerification(e) {
+            e.preventDefault();
+            const utr = document.getElementById('utr-input').value;
+            const fileInput = document.getElementById('screenshot-input');
+
+            if (!fileInput.files[0]) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const newOrder = {
+                    id: 'ORD' + Math.floor(100000 + Math.random() * 900000),
+                    userId: currentUser.id,
+                    userEmail: currentUser.email || currentUser.phone,
+                    bookId: activeBook.id,
+                    bookTitle: activeBook.title,
+                    amount: 1,
+                    utr: utr,
+                    screenshot: evt.target.result,
+                    status: 'PENDING',
+                    date: new Date().toLocaleString()
+                };
+
+                const orders = getOrders();
+                orders.push(newOrder);
+                saveOrders(orders);
+
+                closeModal('payment-modal');
+                alert(`Submission Received!\nOrder ID: ${newOrder.id}\nAdmin verification ke baad access grant ho jayega.`);
+                document.getElementById('upload-form').reset();
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+        }
+
+        function openReader(book) {
+            currentPage = 1;
+            document.getElementById('reader-title').innerText = book.title;
+            document.getElementById('reader-body').innerText = book.content || `--- ${book.title} ---\n\nContent unlocked and loaded.`;
+            document.getElementById('reader-modal').style.display = 'flex';
+        }
+
+        function changePage(delta) {
+            currentPage = Math.max(1, currentPage + delta);
+            document.getElementById('page-num').innerText = `Page ${currentPage}`;
+        }
+
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            renderLibrary();
+        });
+    </script>
+</body>
+</html>
