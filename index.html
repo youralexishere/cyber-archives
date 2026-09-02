@@ -6,6 +6,8 @@
     <title>Cyber Archives - 3D Cyber Library</title>
     <!-- QRCode library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Supabase JS SDK CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -316,21 +318,16 @@
     </div>
 
     <script>
+        // Supabase Initialization
+        const SUPABASE_URL = "https://phiekwbralbbtwnzcaro.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_jHqlv2VmI8ZWDk_GrIrLPA_2y_H8mrZ";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const TARGET_UPI_ID = "8591693220@fam";
         let activeBook = null;
         let currentPage = 1;
-        let currentUser = null;
+        let currentUser = JSON.parse(localStorage.getItem('cyberarchives_current_user')) || null;
         let currentUpiUrl = "";
-
-        function safeJSONParse(key, fallback) {
-            try {
-                const item = localStorage.getItem(key);
-                return item ? JSON.parse(item) : fallback;
-            } catch (e) {
-                console.error("JSON Error:", e);
-                return fallback;
-            }
-        }
 
         const full16BooksDataset = [
             {
@@ -375,23 +372,7 @@
             }
         ];
 
-        function getCategories() {
-            let cats = safeJSONParse('cyberarchives_categories_v4', null);
-            if (!cats || !Array.isArray(cats) || cats.length !== 4) {
-                localStorage.setItem('cyberarchives_categories_v4', JSON.stringify(full16BooksDataset));
-                return full16BooksDataset;
-            }
-            return cats;
-        }
-
-        function getUsers() { return safeJSONParse('cyberarchives_users', []); }
-        function saveUsers(users) { localStorage.setItem('cyberarchives_users', JSON.stringify(users)); }
-
-        function getOrders() { return safeJSONParse('cyberarchives_orders', []); }
-        function saveOrders(orders) { localStorage.setItem('cyberarchives_orders', JSON.stringify(orders)); }
-
         function updateAuthUI() {
-            currentUser = safeJSONParse('cyberarchives_current_user', null);
             const container = document.getElementById('user-auth-container');
             if (currentUser) {
                 container.innerHTML = `
@@ -430,44 +411,51 @@
             }
         }
 
-        function handleSignup(e) {
+        async function handleSignup(e) {
             e.preventDefault();
             const email = document.getElementById('signup-email').value.trim();
             const phone = document.getElementById('signup-phone').value.trim();
             const password = document.getElementById('signup-password').value;
 
-            const users = getUsers();
-            if (users.some(u => u.email === email || u.phone === phone)) {
-                alert("Account with this email or phone already exists!");
+            const newUser = { 
+                user_id: 'USR' + Date.now(), 
+                email, 
+                phone, 
+                password, 
+                registered_at: new Date().toLocaleString() 
+            };
+
+            const { error } = await supabaseClient.from('users').insert([newUser]);
+            if (error) {
+                alert("Error creating account: " + error.message);
                 return;
             }
 
-            const newUser = { id: 'USR' + Date.now(), email, phone, password, registeredAt: new Date().toLocaleString() };
-            users.push(newUser);
-            saveUsers(users);
-
             currentUser = newUser;
             localStorage.setItem('cyberarchives_current_user', JSON.stringify(currentUser));
-            alert("Account created successfully!");
+            alert("Account created successfully on Cloud!");
             closeModal('auth-modal');
             updateAuthUI();
             renderLibrary();
         }
 
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             const identifier = document.getElementById('login-identifier').value.trim();
             const password = document.getElementById('login-password').value;
 
-            const users = getUsers();
-            const user = users.find(u => (u.email === identifier || u.phone === identifier) && u.password === password);
+            const { data: users, error } = await supabaseClient
+                .from('users')
+                .select('*')
+                .or(`email.eq.${identifier},phone.eq.${identifier}`)
+                .eq('password', password);
 
-            if (!user) {
+            if (error || !users || users.length === 0) {
                 alert("Invalid email/phone or password!");
                 return;
             }
 
-            currentUser = user;
+            currentUser = users[0];
             localStorage.setItem('cyberarchives_current_user', JSON.stringify(currentUser));
             alert("Logged in successfully!");
             closeModal('auth-modal');
@@ -482,14 +470,30 @@
             renderLibrary();
         }
 
-        function isBookPurchased(bookId) {
-            if (!currentUser) return false;
-            const orders = getOrders();
-            return orders.some(o => (o.userId === currentUser.id || o.userEmail === currentUser.email) && o.bookId === bookId && o.status === 'APPROVED');
+        // Cache for purchased status check
+        let approvedOrdersCache = [];
+        async function fetchApprovedOrders() {
+            if (!currentUser) return [];
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select('*')
+                .eq('status', 'APPROVED');
+            if (error) return [];
+            approvedOrdersCache = data;
+            return data;
         }
 
-        function renderLibrary(filterId = 'all') {
-            const categoriesData = getCategories();
+        function isBookPurchased(bookId) {
+            if (!currentUser) return false;
+            return approvedOrdersCache.some(o => 
+                (o.user_contact === currentUser.email || o.user_contact === currentUser.phone) && 
+                Number(o.book_title.split('-')[0].trim()) === bookId
+            );
+        }
+
+        async function renderLibrary(filterId = 'all') {
+            await fetchApprovedOrders();
+            const categoriesData = full16BooksDataset;
             const container = document.getElementById('sections-container');
             const navContainer = document.getElementById('categories-nav');
 
@@ -540,8 +544,7 @@
                 return;
             }
 
-            const categoriesData = getCategories();
-            for (let cat of categoriesData) {
+            for (let cat of full16BooksDataset) {
                 let found = cat.books.find(b => b.id === bookId);
                 if (found) { activeBook = found; break; }
             }
@@ -566,7 +569,6 @@
 
             if (isMobile) {
                 statusMsg.innerText = "Redirecting to installed Payment App...";
-                
                 let start = Date.now();
                 window.location.href = currentUpiUrl;
 
@@ -590,7 +592,7 @@
             }
         }
 
-        function submitPaymentVerification(e) {
+        async function submitPaymentVerification(e) {
             e.preventDefault();
             const utr = document.getElementById('utr-input').value;
             const fileInput = document.getElementById('screenshot-input');
@@ -598,27 +600,27 @@
             if (!fileInput.files[0]) return;
 
             const reader = new FileReader();
-            reader.onload = function(evt) {
+            reader.onload = async function(evt) {
                 const newOrder = {
-                    id: 'ORD' + Math.floor(100000 + Math.random() * 900000),
-                    userId: currentUser.id,
-                    userEmail: currentUser.email || currentUser.phone,
-                    bookId: activeBook.id,
-                    bookTitle: activeBook.title,
-                    amount: 1,
+                    order_id: 'ORD' + Math.floor(100000 + Math.random() * 900000),
+                    user_contact: currentUser.email || currentUser.phone,
+                    book_title: `${activeBook.id} - ${activeBook.title}`,
+                    amount: "₹1",
                     utr: utr,
                     screenshot: evt.target.result,
-                    status: 'PENDING',
-                    date: new Date().toLocaleString()
+                    status: 'PENDING'
                 };
 
-                const orders = getOrders();
-                orders.push(newOrder);
-                saveOrders(orders);
+                const { error } = await supabaseClient.from('orders').insert([newOrder]);
+                if (error) {
+                    alert("Error submitting payment: " + error.message);
+                    return;
+                }
 
                 closeModal('payment-modal');
-                alert(`Submission Received!\nOrder ID: ${newOrder.id}\nAdmin verification ke baad access grant ho jayega.`);
+                alert(`Submission Received on Cloud!\nOrder ID: ${newOrder.order_id}\nAdmin verification ke baad access grant ho jayega.`);
                 document.getElementById('upload-form').reset();
+                renderLibrary();
             };
             reader.readAsDataURL(fileInput.files[0]);
         }
