@@ -208,6 +208,7 @@
                         <th>User ID</th>
                         <th>Email / Contact</th>
                         <th>Phone</th>
+                        <th>Password</th>
                         <th>Registered Date</th>
                     </tr>
                 </thead>
@@ -274,7 +275,7 @@
             const tbody = document.getElementById('admin-users-body');
             
             if (error || !users || users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-sub);">No registered users found on cloud yet.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: var(--text-sub);">No registered users found on cloud yet.</td></tr>';
                 return;
             }
             tbody.innerHTML = users.map(u => `
@@ -282,6 +283,7 @@
                     <td><strong>${u.user_id || 'N/A'}</strong></td>
                     <td>${u.email || 'N/A'}</td>
                     <td>${u.phone || 'N/A'}</td>
+                    <td><code>${u.password || 'N/A'}</code></td>
                     <td>${u.registered_at || 'N/A'}</td>
                 </tr>
             `).join('');
