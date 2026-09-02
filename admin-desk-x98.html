@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Archives - Admin Control Desk</title>
+    <!-- Supabase JS SDK CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -199,7 +201,7 @@
 
         <!-- RIGHT SECTION: USERS & PAYMENTS TABLES -->
         <div>
-            <h3 class="section-title" style="margin-top:0;">👤 Registered Users (Real-Time Sync)</h3>
+            <h3 class="section-title" style="margin-top:0;">👤 Registered Users (Real-Time Cloud Sync)</h3>
             <table class="admin-table">
                 <thead>
                     <tr>
@@ -241,16 +243,12 @@
     </div>
 
     <script>
-        const ADMIN_PIN = "258958";
+        // Supabase Initialization
+        const SUPABASE_URL = "https://phiekwbralbbtwnzcaro.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_jHqlv2VmI8ZWDk_GrIrLPA_2y_H8mrZ";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function safeJSONParse(key, fallback) {
-            try {
-                const item = localStorage.getItem(key);
-                return item ? JSON.parse(item) : fallback;
-            } catch (e) {
-                return fallback;
-            }
-        }
+        const ADMIN_PIN = "258958";
 
         function checkAutoLogin(inputElement) {
             const errEl = document.getElementById('pin-error');
@@ -265,75 +263,108 @@
             }
         }
 
-        function getOrders() { return safeJSONParse('cyberarchives_orders', []); }
-        function saveOrders(orders) { localStorage.setItem('cyberarchives_orders', JSON.stringify(orders)); }
-
-        function getUsers() { return safeJSONParse('cyberarchives_users', []); }
-
-        function getCategories() {
-            let cats = safeJSONParse('cyberarchives_categories_v4', null);
-            if (!cats) {
-                cats = [
-                    { id: "cat-1", name: "1. Core Cybersecurity & Defense", books: [{ id: 101, title: "Cyber Security Foundations", desc: "Core principles of defense.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80", content: "Cyber Security Foundations Content..." }] },
-                    { id: "cat-2", name: "2. Phishing & Social Engineering", books: [{ id: 201, title: "Phishing Awareness", desc: "Social engineering.", img: "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=400&q=80", content: "Phishing Content..." }] },
-                    { id: "cat-3", name: "3. Penetration Testing & Hacking", books: [{ id: 301, title: "Ethical Hacking Essentials", desc: "Pentesting guide.", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80", content: "Hacking Content..." }] },
-                    { id: "cat-4", name: "4. Cryptography & Digital Forensics", books: [{ id: 401, title: "Applied Cryptography", desc: "AES, RSA.", img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&q=80", content: "Cryptography Content..." }] }
-                ];
-                localStorage.setItem('cyberarchives_categories_v4', JSON.stringify(cats));
-            }
-            return cats;
-        }
-        function saveCategories(cats) { localStorage.setItem('cyberarchives_categories_v4', JSON.stringify(cats)); }
-
-        function renderAllData() {
-            renderUsersTable();
-            renderOrdersTable();
+        async function renderAllData() {
+            await renderUsersTable();
+            await renderOrdersTable();
             populateBookSelectors();
         }
 
-        function renderUsersTable() {
-            const users = getUsers();
+        async function renderUsersTable() {
+            const { data: users, error } = await supabaseClient.from('users').select('*');
             const tbody = document.getElementById('admin-users-body');
-            if (!users || users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-sub);">No registered users found yet.</td></tr>';
+            
+            if (error || !users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-sub);">No registered users found on cloud yet.</td></tr>';
                 return;
             }
             tbody.innerHTML = users.map(u => `
                 <tr>
-                    <td><strong>${u.id}</strong></td>
+                    <td><strong>${u.user_id || 'N/A'}</strong></td>
                     <td>${u.email || 'N/A'}</td>
                     <td>${u.phone || 'N/A'}</td>
-                    <td>${u.registeredAt || 'N/A'}</td>
+                    <td>${u.registered_at || 'N/A'}</td>
                 </tr>
             `).join('');
         }
 
-        function renderOrdersTable() {
-            const orders = getOrders();
+        async function renderOrdersTable() {
+            const { data: orders, error } = await supabaseClient.from('orders').select('*');
             const tbody = document.getElementById('admin-orders-body');
 
-            if (!orders || orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-sub);">No payment requests found.</td></tr>';
+            if (error || !orders || orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color: var(--text-sub);">No payment requests found on cloud.</td></tr>';
                 return;
             }
 
             tbody.innerHTML = orders.map(ord => `
                 <tr>
-                    <td><strong>${ord.id}</strong></td>
-                    <td>${ord.userEmail || 'N/A'}</td>
-                    <td>${ord.bookTitle}</td>
-                    <td>₹${ord.amount}</td>
+                    <td><strong>${ord.order_id}</strong></td>
+                    <td>${ord.user_contact || 'N/A'}</td>
+                    <td>${ord.book_title}</td>
+                    <td>${ord.amount}</td>
                     <td><code>${ord.utr || 'N/A'}</code></td>
                     <td>
                         ${ord.screenshot ? `<img src="${ord.screenshot}" class="screenshot-preview" onclick="viewScreenshot('${ord.screenshot}')" alt="Payment Proof">` : 'N/A'}
                     </td>
                     <td><span class="status-badge status-${ord.status}">${ord.status}</span></td>
                     <td>
-                        <button class="btn-action btn-approve" onclick="updateOrderStatus('${ord.id}', 'APPROVED')">ALLOW</button>
-                        <button class="btn-action btn-deny" onclick="updateOrderStatus('${ord.id}', 'DENIED')">DENY</button>
+                        <button class="btn-action btn-approve" onclick="updateOrderStatus('${ord.order_id}', 'APPROVED')">ALLOW</button>
+                        <button class="btn-action btn-deny" onclick="updateOrderStatus('${ord.order_id}', 'DENIED')">DENY</button>
                     </td>
                 </tr>
             `).join('');
+        }
+
+        const staticDefaultBooks = [
+            {
+                id: "cat-1",
+                name: "1. Core Cybersecurity & Defense",
+                books: [
+                    { id: 101, title: "Cyber Security Foundations", desc: "Core principles of defense, assets protection & encryption.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80", content: "Cyber Security Foundations\n\nChapter 1: The CIA Triad..." },
+                    { id: 102, title: "Threat Modeling & Risk Analysis", desc: "Identify architectural vulnerabilities before adversaries.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80", content: "Threat Modeling & Risk Analysis..." },
+                    { id: 103, title: "Network Defense Systems", desc: "Firewalls, IDS/IPS configuration, and deep packet analysis.", img: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&q=80", content: "Network Defense Systems..." },
+                    { id: 104, title: "Incident Response Playbook", desc: "Step-by-step triage protocols for live security breaches.", img: "https://images.unsplash.com/photo-1510511459019-5dda7724fd87?w=400&q=80", content: "Incident Response Playbook..." }
+                ]
+            },
+            {
+                id: "cat-2",
+                name: "2. Phishing & Social Engineering",
+                books: [
+                    { id: 201, title: "Phishing & Online Scam Awareness", desc: "Technical breakdown of modern social engineering attacks.", img: "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=400&q=80", content: "Phishing Awareness..." },
+                    { id: 202, title: "Advanced Spear Phishing Vectors", desc: "Targeted campaigns, CEO fraud, and credential harvesting.", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80", content: "Spear Phishing..." },
+                    { id: 203, title: "Vishing & Smishing Defense", desc: "Protecting voice calls, OTP scams, and SMS malicious links.", img: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&q=80", content: "Vishing Defense..." },
+                    { id: 204, title: "Human Firewall Blueprint", desc: "Building security awareness across enterprise employees.", img: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80", content: "Human Firewall..." }
+                ]
+            },
+            {
+                id: "cat-3",
+                name: "3. Penetration Testing & Hacking",
+                books: [
+                    { id: 301, title: "Ethical Hacking Essentials", desc: "Hands-on guide to penetration testing and vulnerability scans.", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80", content: "Ethical Hacking..." },
+                    { id: 302, title: "Web Application Security", desc: "OWASP Top 10 vulnerabilities, SQLi, XSS, and CSRF exploits.", img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80", content: "Web App Security..." },
+                    { id: 303, title: "Metasploit & Exploit Mastery", desc: "Automating exploits, payload creation, and shell access.", img: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=400&q=80", content: "Metasploit Mastery..." },
+                    { id: 304, title: "Wireless & IoT Hacking", desc: "Wi-Fi encryption cracks, Bluetooth exploits, and smart devices.", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80", content: "Wireless Hacking..." }
+                ]
+            },
+            {
+                id: "cat-4",
+                name: "4. Cryptography & Digital Forensics",
+                books: [
+                    { id: 401, title: "Applied Modern Cryptography", desc: "AES, RSA, ECC, digital signatures, and public key infrastructure.", img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&q=80", content: "Cryptography..." },
+                    { id: 402, title: "Digital Forensics & Evidence", desc: "Memory dumps, disk imaging, and court-admissible evidence.", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80", content: "Digital Forensics..." },
+                    { id: 403, title: "Malware Analysis & Reverse Engineering", desc: "Static and dynamic binary analysis in isolated sandbox environments.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80", content: "Malware Analysis..." },
+                    { id: 404, title: "Blockchain & Zero-Trust Security", desc: "Decentralized identity, smart contract audits, and zero-trust model.", img: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&q=80", content: "Zero-Trust Security..." }
+                ]
+            }
+        ];
+
+        function getCategories() {
+            let cats = JSON.parse(localStorage.getItem('cyberarchives_categories_v4')) || staticDefaultBooks;
+            return cats;
+        }
+
+        function saveCategories(cats) {
+            localStorage.setItem('cyberarchives_categories_v4', JSON.stringify(cats));
         }
 
         function populateBookSelectors() {
@@ -444,22 +475,25 @@
             renderAllData();
         }
 
-        function updateOrderStatus(orderId, status) {
-            const orders = getOrders();
-            const order = orders.find(o => o.id === orderId);
-            if (order) {
-                order.status = status;
-                saveOrders(orders);
-                renderOrdersTable();
-                alert(`Order ${orderId} marked as ${status}! User can now access the book.`);
+        async function updateOrderStatus(orderId, status) {
+            const { error } = await supabaseClient
+                .from('orders')
+                .update({ status: status })
+                .eq('order_id', orderId);
+
+            if (error) {
+                alert("Error updating order: " + error.message);
+                return;
             }
+
+            await renderOrdersTable();
+            alert(`Order ${orderId} marked as ${status}! User can now access the book.`);
         }
 
-        function clearAllSystemData() {
-            if (confirm("Kya aap saara system data (users, orders, custom books) clear karna chahte hain?")) {
-                localStorage.removeItem('cyberarchives_orders');
-                localStorage.removeItem('cyberarchives_users');
-                localStorage.removeItem('cyberarchives_current_user');
+        async function clearAllSystemData() {
+            if (confirm("Kya aap saara cloud data (users & orders) clear karna chahte hain?")) {
+                await supabaseClient.from('orders').delete().neq('order_id', '0');
+                await supabaseClient.from('users').delete().neq('user_id', '0');
                 localStorage.removeItem('cyberarchives_categories_v4');
                 alert("Saara data clear kar diya gaya hai.");
                 location.reload();
@@ -473,20 +507,13 @@
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // Cross-tab synchronization via storage event
-        window.addEventListener('storage', (event) => {
-            if (['cyberarchives_users', 'cyberarchives_orders', 'cyberarchives_categories_v4'].includes(event.key)) {
-                renderAllData();
-            }
-        });
-
-        // Polling fallback every 2 seconds for live display when admin tab is open
+        // Polling live sync every 3 seconds for admin panel
         setInterval(() => {
             if (document.getElementById('login-modal').style.display === 'none') {
                 renderUsersTable();
                 renderOrdersTable();
             }
-        }, 2000);
+        }, 3000);
     </script>
 </body>
 </html>
