@@ -128,9 +128,11 @@
             transform-style: preserve-3d;
             transition: transform 0.4s ease;
             box-shadow: 5px 8px 18px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            background: #070a12;
         }
         .book-card:hover .book-cover-3d { transform: rotateY(-12deg) rotateX(5deg); }
-        .book-cover-3d img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px 8px 8px 4px; }
+        .book-cover-3d img, .book-cover-3d video { width: 100%; height: 100%; object-fit: cover; border-radius: 4px 8px 8px 4px; }
 
         .book-card h3 { font-size: 1.05rem; margin-bottom: 8px; color: #fff; line-height: 1.3; }
         .book-card p { color: var(--text-sub); font-size: 0.82rem; margin-bottom: 18px; line-height: 1.4; }
@@ -279,13 +281,13 @@
 
             <div id="qr-pay-section">
                 <p class="status-msg" id="redirect-status">Opening payment app...</p>
-                
+
                 <div class="qr-box" id="qr-wrapper">
                     <div id="qrcode"></div>
                 </div>
 
                 <p style="text-align: center; font-size: 0.85rem; color: var(--accent); font-weight: bold;">UPI ID: 8591693220@fam</p>
-                
+
                 <hr style="border: 0.5px solid #334155; margin: 18px 0;">
 
                 <form id="upload-form" onsubmit="submitPaymentVerification(event)">
@@ -334,7 +336,14 @@
                 id: "cat-1",
                 name: "1. Core Cybersecurity & Defense",
                 books: [
-                    { id: 101, title: "Cyber Security Foundations", desc: "Core principles of defense, assets protection & encryption.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80", content: "Cyber Security Foundations\n\nChapter 1: The CIA Triad\nConfidentiality, Integrity, and Availability form the bedrock of information security..." },
+                    { 
+                        id: 101, 
+                        title: "Cyber Security Foundations", 
+                        desc: "Core principles of defense, assets protection & encryption.", 
+                        isVideo: true,
+                        videoUrl: "B11.mp4.mp4",
+                        content: "Cyber Security Foundations\n\nChapter 1: The CIA Triad\nConfidentiality, Integrity, and Availability form the bedrock of information security..." 
+                    },
                     { id: 102, title: "Threat Modeling & Risk Analysis", desc: "Identify architectural vulnerabilities before adversaries.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80", content: "Threat Modeling & Risk Analysis\n\nChapter 1: STRIDE Methodology\nSpoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege..." },
                     { id: 103, title: "Network Defense Systems", desc: "Firewalls, IDS/IPS configuration, and deep packet analysis.", img: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&q=80", content: "Network Defense Systems\n\nChapter 1: Perimeter Security\nConfiguring stateful inspection firewalls, packet filters, and DMZ network setups..." },
                     { id: 104, title: "Incident Response Playbook", desc: "Step-by-step triage protocols for live security breaches.", img: "https://images.unsplash.com/photo-1510511459019-5dda7724fd87?w=400&q=80", content: "Incident Response Playbook\n\nChapter 1: Initial Detection & Containment\nIsolating infected endpoints, capturing memory dumps, and preserving evidence..." }
@@ -514,11 +523,14 @@
                 <div class="grid zoom-anim">
                     ${cat.books.map(book => {
                         const unlocked = isBookPurchased(book.id);
+                        const mediaElement = book.isVideo ? 
+                            `<video src="${book.videoUrl}" autoplay loop muted playsinline preload="auto"></video>` : 
+                            `<img src="${book.img}" alt="${book.title}" loading="lazy">`;
                         return `
                             <div class="book-card">
                                 <div>
                                     <div class="book-cover-3d">
-                                        <img src="${book.img}" alt="${book.title}" loading="lazy">
+                                        ${mediaElement}
                                     </div>
                                     <h3>${book.title}</h3>
                                     <p>${book.desc}</p>
