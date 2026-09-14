@@ -322,7 +322,7 @@
     <script>
         // Supabase Initialization
         const SUPABASE_URL = "https://phiekwbralbbtwnzcaro.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_jHqlv2VmI8ZWDk_GrIrLPA_2y_H8mrZ";
+        const SUPABASE_ANON_KEY = "sb_publishable_FxUwz42Sd3hyzHOUeVz0mQ_hrXT6tyA";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const TARGET_UPI_ID = "8591693220@fam";
@@ -479,7 +479,6 @@
             renderLibrary();
         }
 
-        // Cache for purchased status check
         let approvedOrdersCache = [];
         async function fetchApprovedOrders() {
             if (!currentUser) return [];
