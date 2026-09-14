@@ -283,7 +283,7 @@
     <script>
         // Supabase Initialization
         const SUPABASE_URL = "https://phiekwbralbbtwnzcaro.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_jHqlv2VmI8ZWDk_GrIrLPA_2y_H8mrZ";
+        const SUPABASE_ANON_KEY = "sb_publishable_FxUwz42Sd3hyzHOUeVz0mQ_hrXT6tyA";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const ADMIN_PIN = "258958";
@@ -307,7 +307,6 @@
             populateBookSelectors();
         }
 
-        // FETCH REGISTERED USERS LIVE DATA
         async function renderUsersTable() {
             const { data: users, error } = await supabaseClient
                 .from('users')
@@ -341,7 +340,6 @@
             `).join('');
         }
 
-        // FETCH ORDERS & PAYMENT SUBMISSIONS LIVE DATA
         async function renderOrdersTable() {
             const { data: orders, error } = await supabaseClient
                 .from('orders')
@@ -391,7 +389,6 @@
             `).join('');
         }
 
-        // DEFAULT BOOKS CONFIGURATION
         const staticDefaultBooks = [
             {
                 id: "cat-1",
@@ -583,7 +580,6 @@
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // Live Polling every 3 seconds
         setInterval(() => {
             if (document.getElementById('login-modal').style.display === 'none') {
                 renderUsersTable();
