@@ -577,7 +577,58 @@ Before making any payment, always check where the request is coming from.
             renderLibrary(catId);
         }
 
-        function handleBookClick(bookId) {
+        // --- NEW FEATURE: Biometric (Fingerprint / Face ID) Authentication ---
+        async function authenticateWithFingerprint() {
+            if (!window.PublicKeyCredential) {
+                alert("Aapka device/browser Biometric Authentication support nahi karta.");
+                return true; // Fallback: Allow direct access on unsupported devices
+            }
+
+            try {
+                const isAvailable = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                if (!isAvailable) {
+                    alert("Aapke phone par Fingerprint ya Screen Lock set nahi hai.");
+                    return true;
+                }
+
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+
+                const userId = new Uint8Array(16);
+                window.crypto.getRandomValues(userId);
+
+                const createCredentialOptions = {
+                    publicKey: {
+                        rp: { name: "Cyber Archives" },
+                        user: {
+                            id: userId,
+                            name: (currentUser && (currentUser.email || currentUser.phone)) || "user",
+                            displayName: "Cyber Archives User"
+                        },
+                        challenge: challenge,
+                        pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+                        timeout: 60000,
+                        authenticatorSelection: {
+                            authenticatorAttachment: "platform",
+                            userVerification: "required"
+                        }
+                    }
+                };
+
+                await navigator.credentials.create(createCredentialOptions);
+                return true; // Verification Successful
+            } catch (error) {
+                if (error.name === "NotAllowedError") {
+                    alert("Fingerprint authentication cancel kar diya gaya.");
+                } else {
+                    console.log("Biometric Auth Error:", error);
+                    return true; // Fallback if credential exists or browser restrictions apply
+                }
+                return false; // Verification Cancelled or Failed
+            }
+        }
+
+        async function handleBookClick(bookId) {
             if (!currentUser) {
                 alert("Please Login or Sign-Up to purchase and read books.");
                 openAuthModal('login');
@@ -590,7 +641,13 @@ Before making any payment, always check where the request is coming from.
             }
 
             if (isBookPurchased(bookId)) {
-                openReader(activeBook);
+                // Step 1: Trigger Fingerprint Lock Prompt
+                const authenticated = await authenticateWithFingerprint();
+                
+                // Step 2: Open Scam Alert Reader Modal only if authenticated
+                if (authenticated) {
+                    openReader(activeBook);
+                }
                 return;
             }
 
