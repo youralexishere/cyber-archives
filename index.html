@@ -320,7 +320,7 @@
     </div>
 
     <script>
-        // Supabase Initialization with Updated Project URL
+        // Supabase Initialization
         const SUPABASE_URL = "https://qjrgaudzxfvpkqewdwer.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_FxUwz42Sd3hyzHOUeVz0mQ_hrXT6tyA";
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -342,7 +342,7 @@
                         desc: "Core principles of defense, assets protection & encryption.", 
                         isVideo: true,
                         videoUrl: "B11.mp4",
-                        content: "Cyber Security Foundations\n\nChapter 1: The CIA Triad\nConfidentiality, Integrity, and Availability form the bedrock of information security..." 
+                        content: `Cyber Security Foundations\n\nChapter 1: The CIA Triad\nConfidentiality, Integrity, and Availability form the bedrock of information security...` 
                     },
                     { 
                         id: 102, 
@@ -350,7 +350,7 @@
                         desc: "Identify architectural vulnerabilities before adversaries.", 
                         isVideo: true,
                         videoUrl: "B12.mp4", 
-                        content: "Threat Modeling & Risk Analysis\n\nChapter 1: STRIDE Methodology\nSpoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege..." 
+                        content: `Threat Modeling & Risk Analysis\n\nChapter 1: STRIDE Methodology\nSpoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege...` 
                     },
                     { 
                         id: 103, 
@@ -358,7 +358,7 @@
                         desc: "Firewalls, IDS/IPS configuration, and deep packet analysis.", 
                         isVideo: true,
                         videoUrl: "B13.mp4", 
-                        content: "Network Defense Systems\n\nChapter 1: Perimeter Security\nConfiguring stateful inspection firewalls, packet filters, and DMZ network setups..." 
+                        content: `Network Defense Systems\n\nChapter 1: Perimeter Security\nConfiguring stateful inspection firewalls, packet filters, and DMZ network setups...` 
                     },
                     { 
                         id: 104, 
@@ -366,7 +366,7 @@
                         desc: "Step-by-step triage protocols for live security breaches.", 
                         isVideo: true,
                         videoUrl: "B14.mp4", 
-                        content: "Incident Response Playbook\n\nChapter 1: Initial Detection & Containment\nIsolating infected endpoints, capturing memory dumps, and preserving evidence..." 
+                        content: `Incident Response Playbook\n\nChapter 1: Initial Detection & Containment\nIsolating infected endpoints, capturing memory dumps, and preserving evidence...` 
                     }
                 ]
             },
@@ -374,30 +374,30 @@
                 id: "cat-2",
                 name: "2. Phishing & Social Engineering",
                 books: [
-                    { id: 201, title: "Phishing & Online Scam Awareness", desc: "Technical breakdown of modern social engineering attacks.", img: "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=400&q=80", content: "Phishing & Online Scam Awareness\n\nChapter 1: Social Engineering Mechanics\nUnderstanding human vulnerabilities, urgency traps, and spear phishing patterns..." },
-                    { id: 202, title: "Advanced Spear Phishing Vectors", desc: "Targeted campaigns, CEO fraud, and credential harvesting.", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80", content: "Advanced Spear Phishing Vectors\n\nChapter 1: OSINT Data Gathering\nHow attackers map corporate hierarchies to launch convincing impersonation attacks..." },
-                    { id: 203, title: "Vishing & Smishing Defense", desc: "Protecting voice calls, OTP scams, and SMS malicious links.", img: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&q=80", content: "Vishing & Smishing Defense\n\nChapter 1: Telecom Spoofing & Caller ID\nTechniques used by call center scammers to fake official bank numbers..." },
-                    { id: 204, title: "Human Firewall Blueprint", desc: "Building security awareness across enterprise employees.", img: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80", content: "Human Firewall Blueprint\n\nChapter 1: Awareness Drills\nDesigning realistic phishing simulations to test organizational resilience..." }
+                    { id: 201, title: "Phishing & Online Scam Awareness", desc: "Technical breakdown of modern social engineering attacks.", img: "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=400&q=80", content: `Phishing & Online Scam Awareness\n\nChapter 1: Social Engineering Mechanics\nUnderstanding human vulnerabilities, urgency traps, and spear phishing patterns...` },
+                    { id: 202, title: "Advanced Spear Phishing Vectors", desc: "Targeted campaigns, CEO fraud, and credential harvesting.", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80", content: `Advanced Spear Phishing Vectors\n\nChapter 1: OSINT Data Gathering\nHow attackers map corporate hierarchies to launch convincing impersonation attacks...` },
+                    { id: 203, title: "Vishing & Smishing Defense", desc: "Protecting voice calls, OTP scams, and SMS malicious links.", img: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&q=80", content: `Vishing & Smishing Defense\n\nChapter 1: Telecom Spoofing & Caller ID\nTechniques used by call center scammers to fake official bank numbers...` },
+                    { id: 204, title: "Human Firewall Blueprint", desc: "Building security awareness across enterprise employees.", img: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80", content: `Human Firewall Blueprint\n\nChapter 1: Awareness Drills\nDesigning realistic phishing simulations to test organizational resilience...` }
                 ]
             },
             {
                 id: "cat-3",
                 name: "3. Penetration Testing & Hacking",
                 books: [
-                    { id: 301, title: "Ethical Hacking Essentials", desc: "Hands-on guide to penetration testing and vulnerability scans.", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80", content: "Ethical Hacking Essentials\n\nChapter 1: Reconnaissance\nActive vs passive scanning using Nmap, Shodan, and DNS footprinting..." },
-                    { id: 302, title: "Web Application Security", desc: "OWASP Top 10 vulnerabilities, SQLi, XSS, and CSRF exploits.", img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80", content: "Web Application Security\n\nChapter 1: Injection Attacks\nUnderstanding SQL injection vectors, blind SQLi, and parameterized query defenses..." },
-                    { id: 303, title: "Metasploit & Exploit Mastery", desc: "Automating exploits, payload creation, and shell access.", img: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=400&q=80", content: "Metasploit & Exploit Mastery\n\nChapter 1: Exploit Frameworks\nSetting up listener handlers, generating MSFvenom payloads, and post-exploitation..." },
-                    { id: 304, title: "Wireless & IoT Hacking", desc: "Wi-Fi encryption cracks, Bluetooth exploits, and smart devices.", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80", content: "Wireless & IoT Hacking\n\nChapter 1: WPA2/WPA3 Attacks\nCapturing 4-way handshakes, dictionary attacks, and rogue AP setup..." }
+                    { id: 301, title: "Ethical Hacking Essentials", desc: "Hands-on guide to penetration testing and vulnerability scans.", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80", content: `Ethical Hacking Essentials\n\nChapter 1: Reconnaissance\nActive vs passive scanning using Nmap, Shodan, and DNS footprinting...` },
+                    { id: 302, title: "Web Application Security", desc: "OWASP Top 10 vulnerabilities, SQLi, XSS, and CSRF exploits.", img: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80", content: `Web Application Security\n\nChapter 1: Injection Attacks\nUnderstanding SQL injection vectors, blind SQLi, and parameterized query defenses...` },
+                    { id: 303, title: "Metasploit & Exploit Mastery", desc: "Automating exploits, payload creation, and shell access.", img: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=400&q=80", content: `Metasploit & Exploit Mastery\n\nChapter 1: Exploit Frameworks\nSetting up listener handlers, generating MSFvenom payloads, and post-exploitation...` },
+                    { id: 304, title: "Wireless & IoT Hacking", desc: "Wi-Fi encryption cracks, Bluetooth exploits, and smart devices.", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80", content: `Wireless & IoT Hacking\n\nChapter 1: WPA2/WPA3 Attacks\nCapturing 4-way handshakes, dictionary attacks, and rogue AP setup...` }
                 ]
             },
             {
                 id: "cat-4",
                 name: "4. Cryptography & Digital Forensics",
                 books: [
-                    { id: 401, title: "Applied Modern Cryptography", desc: "AES, RSA, ECC, digital signatures, and public key infrastructure.", img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&q=80", content: "Applied Modern Cryptography\n\nChapter 1: Symmetric vs Asymmetric Ciphers\nMathematical foundations of AES encryption and RSA key generation..." },
-                    { id: 402, title: "Digital Forensics & Evidence", desc: "Memory dumps, disk imaging, and court-admissible evidence.", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80", content: "Digital Forensics & Evidence\n\nChapter 1: Chain of Custody\nForensic disk cloning using dd, write-blockers, and FTK Imager software..." },
-                    { id: 403, title: "Malware Analysis & Reverse Engineering", desc: "Static and dynamic binary analysis in isolated sandbox environments.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80", content: "Malware Analysis & Reverse Engineering\n\nChapter 1: Disassembly & Ghidra\nAnalyzing PE headers, assembly code, and registry persistence hooks..." },
-                    { id: 404, title: "Blockchain & Zero-Trust Security", desc: "Decentralized identity, smart contract audits, and zero-trust model.", img: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&q=80", content: "Blockchain & Zero-Trust Security\n\nChapter 1: Zero-Trust Architecture\nNever trust, always verify: Identity-centric network access control..." }
+                    { id: 401, title: "Applied Modern Cryptography", desc: "AES, RSA, ECC, digital signatures, and public key infrastructure.", img: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&q=80", content: `Applied Modern Cryptography\n\nChapter 1: Symmetric vs Asymmetric Ciphers\nMathematical foundations of AES encryption and RSA key generation...` },
+                    { id: 402, title: "Digital Forensics & Evidence", desc: "Memory dumps, disk imaging, and court-admissible evidence.", img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&q=80", content: `Digital Forensics & Evidence\n\nChapter 1: Chain of Custody\nForensic disk cloning using dd, write-blockers, and FTK Imager software...` },
+                    { id: 403, title: "Malware Analysis & Reverse Engineering", desc: "Static and dynamic binary analysis in isolated sandbox environments.", img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&q=80", content: `Malware Analysis & Reverse Engineering\n\nChapter 1: Disassembly & Ghidra\nAnalyzing PE headers, assembly code, and registry persistence hooks...` },
+                    { id: 404, title: "Blockchain & Zero-Trust Security", desc: "Decentralized identity, smart contract audits, and zero-trust model.", img: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&q=80", content: `Blockchain & Zero-Trust Security\n\nChapter 1: Zero-Trust Architecture\nNever trust, always verify: Identity-centric network access control...` }
                 ]
             }
         ];
@@ -637,7 +637,7 @@
                     order_id: 'ORD' + Math.floor(100000 + Math.random() * 900000),
                     user_contact: currentUser.email || currentUser.phone,
                     book_title: `${activeBook.id} - ${activeBook.title}`,
-                    amount: "₹1",
+                    amount: 1, // FIXED: Numeric value sent to match Supabase database column type
                     utr: utr,
                     screenshot: evt.target.result,
                     status: 'PENDING'
